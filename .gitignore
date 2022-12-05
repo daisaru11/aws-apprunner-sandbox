@@ -1,0 +1,15 @@
+.envrc
+
+*.swp
+*~
+.project
+.DS_Store
+.idea
+.secret
+
+*.tfvars
+.terraform
+*.tfstate.backup
+*.tfstate.*.backup
+*.tfstate
+

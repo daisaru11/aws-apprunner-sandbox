@@ -1,0 +1,42 @@
+x-app: &app
+  build:
+    context: .
+    dockerfile: dev.Dockerfile
+  stdin_open: true
+  tty: true
+  volumes:
+    - .:/app:cached
+    - bundle:/usr/local/bundle
+  environment:
+    DATABASE_URL: postgres://postgres:postgres@postgres:5432
+    WEB_CONCURRENCY: ${WEB_CONCURRENCY:-1}
+    RAILS_ENV: development
+    RAILS_MASTER_KEY: "__insecure_rails_master_key_____"
+
+services:
+  init:
+    <<: *app
+    command: ['./dev.init.sh']
+  api:
+    <<: *app
+    ports:
+      - "3000:3000"
+    depends_on:
+      init: { condition: 'service_completed_successfully' }
+    command: bundle exec rails server -b 0.0.0.0
+
+  postgres:
+    image: postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432
+    healthcheck:
+      test: pg_isready -U postgres -h 127.0.0.1
+      interval: 5s
+
+volumes:
+  bundle:
+  postgres:
